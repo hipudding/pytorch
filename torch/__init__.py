@@ -2039,3 +2039,18 @@ def _constrain_as_size(symbol, min: Optional[builtins.int] = None, max: Optional
 
 from . import _logging
 _logging._init_logs()
+
+if os.getenv('TORCH_EXTRA_BACKENDS'):
+    import importlib
+    import sys
+    this_module = sys.modules[__name__]
+    backends = os.getenv('TORCH_EXTRA_BACKENDS').split(',')
+    for backend in backends:
+        module_info = backend.split(' as ')
+        module_name = module_info[0].strip()
+        module_alias = module_info[1].strip() if len(module_info) > 1 else module_name
+        try:
+            extra_module = importlib.import_module(module_name)
+            setattr(this_module, module_alias, extra_module)
+        except ImportError:
+            pass
